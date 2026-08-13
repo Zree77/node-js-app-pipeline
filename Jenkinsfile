@@ -30,27 +30,18 @@ pipeline {
     steps {
         withSonarQubeEnv('sonarqube') {
             sh '''
-                apk add --no-cache openjdk17-jre curl unzip
+                apk add --no-cache openjdk17-jre
 
                 export JAVA_HOME="/usr/lib/jvm/java-17-openjdk"
                 export PATH="$JAVA_HOME/bin:$PATH"
 
                 java -version
 
-                SCANNER_VERSION="6.2.1.4610"
+                cd node-app
 
-                cd /tmp
+                npm install --no-save sonar-scanner
 
-                curl -fsSL -o sonar-scanner.zip \
-                  "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${SCANNER_VERSION}-linux-x64.zip"
-
-                unzip -q sonar-scanner.zip
-
-                export SONAR_SCANNER_HOME="/tmp/sonar-scanner-${SCANNER_VERSION}-linux-x64"
-
-                cd "$WORKSPACE/node-app"
-
-                "$SONAR_SCANNER_HOME/bin/sonar-scanner" \
+                ./node_modules/.bin/sonar-scanner \
                   -Dsonar.projectKey=node-express-app \
                   -Dsonar.projectName="Node Express App" \
                   -Dsonar.sources=. \
