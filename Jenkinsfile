@@ -30,16 +30,27 @@ pipeline {
     steps {
         withSonarQubeEnv('sonarqube') {
             sh '''
-                apk add --no-cache openjdk17-jre
+                apk add --no-cache openjdk17-jre curl unzip
 
                 export JAVA_HOME="/usr/lib/jvm/java-17-openjdk"
                 export PATH="$JAVA_HOME/bin:$PATH"
 
                 java -version
 
-                cd node-app
+                SCANNER_VERSION="6.2.1.4610"
 
-                npx --yes @sonar/scan@4.3.8 \
+                cd /tmp
+
+                curl -fsSL -o sonar-scanner.zip \
+                  "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${SCANNER_VERSION}-linux-x64.zip"
+
+                unzip -q sonar-scanner.zip
+
+                export SONAR_SCANNER_HOME="/tmp/sonar-scanner-${SCANNER_VERSION}-linux-x64"
+
+                cd "$WORKSPACE/node-app"
+
+                "$SONAR_SCANNER_HOME/bin/sonar-scanner" \
                   -Dsonar.projectKey=node-express-app \
                   -Dsonar.projectName="Node Express App" \
                   -Dsonar.sources=. \
@@ -49,7 +60,6 @@ pipeline {
         }
     }
 }
-
         stage('Build and Push Docker Image') {
             environment {
                 DOCKER_IMAGE = "zree7/node-js-app:${BUILD_NUMBER}"
