@@ -26,22 +26,29 @@ pipeline {
     }
 }
 
-        stage('SonarQube Analysis') {
-            steps {
-                withSonarQubeEnv('sonarqube') {
-                    sh '''
-                        cd node-app
+      stage('SonarQube Analysis') {
+    steps {
+        withSonarQubeEnv('sonarqube') {
+            sh '''
+                apk add --no-cache openjdk17-jre
 
-                        npx --yes @sonar/scan@4.3.8 \
-                          -Dsonar.projectKey=node-express-app \
-                          -Dsonar.projectName="Node Express App" \
-                          -Dsonar.sources=. \
-                          -Dsonar.exclusions="node_modules/**,coverage/**" \
-                          -Dsonar.host.url="$SONAR_HOST_URL"
-                    '''
-                }
-            }
+                export JAVA_HOME="/usr/lib/jvm/java-17-openjdk"
+                export PATH="$JAVA_HOME/bin:$PATH"
+
+                java -version
+
+                cd node-app
+
+                npx --yes @sonar/scan@4.3.8 \
+                  -Dsonar.projectKey=node-express-app \
+                  -Dsonar.projectName="Node Express App" \
+                  -Dsonar.sources=. \
+                  -Dsonar.exclusions="node_modules/**,coverage/**" \
+                  -Dsonar.host.url="$SONAR_HOST_URL"
+            '''
         }
+    }
+}
 
         stage('Build and Push Docker Image') {
             environment {
