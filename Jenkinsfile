@@ -14,14 +14,15 @@ pipeline {
             }
         }
 
-        stage('Build and Test') {
-            steps {
-                sh '''
-                    npm ci
-                    npm test
-                '''
-            }
-        }
+       stage('Build and Test') {
+    steps {
+        sh '''
+            cd node-app
+            npm ci
+            npm test
+        '''
+    }
+}
 
         stage('SonarQube Analysis') {
             steps {
