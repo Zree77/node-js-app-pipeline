@@ -51,28 +51,33 @@ pipeline {
         }
     }
 }
-        stage('Build and Push Docker Image') {
-            environment {
-                DOCKER_IMAGE = "zree7/node-js-app:${BUILD_NUMBER}"
-            }
+       stage('Build and Push Docker Image') {
+    environment {
+        DOCKER_IMAGE = "zree7/node-js-app:${BUILD_NUMBER}"
+    }
 
-            steps {
-                script {
-                    sh 'docker build -t ${DOCKER_IMAGE} node-app'
+    steps {
+        script {
+            sh '''
+                apk add --no-cache docker-cli
 
-                    def dockerImage = docker.image("${DOCKER_IMAGE}")
+                docker --version
 
-                    docker.withRegistry(
-                        'https://index.docker.io/v1/',
-                        'docker-cred'
-                    ) {
-                        dockerImage.push()
-                        dockerImage.push("latest")
-                    }
-                }
+                docker build -t ${DOCKER_IMAGE} node-app
+            '''
+
+            def dockerImage = docker.image("${DOCKER_IMAGE}")
+
+            docker.withRegistry(
+                'https://index.docker.io/v1/',
+                'docker-cred'
+            ) {
+                dockerImage.push()
+                dockerImage.push("latest")
             }
         }
-
+    }
+}
         stage('Update Deployment File') {
             environment {
                 GIT_REPO_NAME = "node-js-app-pipeline"
