@@ -78,44 +78,49 @@ pipeline {
         }
     }
 }
-        stage('Update Deployment File') {
-            environment {
-                GIT_REPO_NAME = "node-js-app-pipeline"
-                GIT_USER_NAME = "Zree77"
-            }
+       stage('Update Deployment File') {
+    environment {
+        GIT_REPO_NAME = "node-js-app-pipeline"
+        GIT_USER_NAME = "Zree77"
+    }
 
-            steps {
-                withCredentials([
-                    usernamePassword(
-                        credentialsId: 'github',
-                        usernameVariable: 'GITHUB_USERNAME',
-                        passwordVariable: 'GITHUB_TOKEN'
-                    )
-                ]) {
-                    sh '''
-                        rm -rf repo-temp
+    steps {
+        withCredentials([
+            usernamePassword(
+                credentialsId: 'github',
+                usernameVariable: 'GITHUB_USERNAME',
+                passwordVariable: 'GITHUB_TOKEN'
+            )
+        ]) {
+            sh '''
+                apk add --no-cache git
 
-                        git clone https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git repo-temp
+                git --version
 
-                        cd repo-temp
+                rm -rf repo-temp
 
-                        git config user.email "zreeprojects@gmail.com"
-                        git config user.name "${GIT_USER_NAME}"
+                git clone https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git repo-temp
 
-                        sed -i "s|image: .*|image: zree7/node-js-app:${BUILD_NUMBER}|g" node-app-manifests/deployment.yml
+                cd repo-temp
 
-                        git add node-app-manifests/deployment.yml
+                git config user.email "zreeprojects@gmail.com"
+                git config user.name "${GIT_USER_NAME}"
 
-                        git commit \
-                            -m "Update Node.js image tag to ${BUILD_NUMBER} [skip ci]" \
-                            || echo "No changes to commit"
+                sed -i "s|image: .*|image: zree7/node-js-app:${BUILD_NUMBER}|g" node-app-manifests/deployment.yml
 
-                        git push origin main
-                    '''
-                }
-            }
+                git add node-app-manifests/deployment.yml
+
+                git commit -m "Update Node.js image tag to ${BUILD_NUMBER} [skip ci]" || echo "No changes to commit"
+
+                git push origin main
+            '''
         }
     }
+}
+
+    }
+}
+
 
     post {
         always {
