@@ -14,15 +14,17 @@ pipeline {
             }
         }
 
-        stage('Build and Test') {
-            steps {
-                sh '''
-                    cd node-app
-                    npm ci
-                    npm test
-                '''
-            }
-        }
+       stage('Build and Test') {
+    steps {
+        sh '''
+            apk add --no-cache openjdk17-jre
+
+            cd node-app
+            npm ci
+            npm test
+        '''
+    }
+}
 
         stage('SonarQube Analysis') {
             steps {
